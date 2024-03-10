@@ -13,9 +13,9 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class GameSc implements Screen {
     Main main;
-
     Joystick joy;
     Player player;
+    Player player2;
 
     public GameSc(Main main){
         this.main = main;
@@ -118,11 +118,10 @@ public class GameSc implements Screen {
     public void loadHeroes(){
         joy = new Joystick(Main.circle, Main.capibara, new Point2D(((Main.screenHeight/3)/2+(Main.screenHeight/3)/4), (Main.screenHeight/3)/2+(Main.screenHeight/3)/4), Main.screenHeight/3);
         player = new Player(Main.capibara, new Point2D(Main.screenWidth/2, Main.screenHeight/2), 10, Main.screenHeight/20, 20);
-
     }
 
     public void multitouch(float x, float y, boolean isDownTouch, int pointer){
-        for(int i =0; i < 5; i++){
+        for(int i =0; i < 3; i++){
             joy.update(x,y,isDownTouch, pointer);
         }
     }

@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class Player extends Heroes {
 
     private int Score;
-
     private float health;
 
     public Player(Texture img, Point2D position, float speed, float radius, float health) {

@@ -1,9 +1,12 @@
 package com.aqwsxlostfly.packandgo.Tools;
 
+import com.aqwsxlostfly.packandgo.Main;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Joystick {
+
+
 
     private int pointer = -1;
     Texture CircleImg, StickImg;
@@ -31,19 +34,29 @@ public class Joystick {
         Point2D touch = new Point2D(x, y);
         if (CircleBounds.isContains(touch) && isDownTouch && this.pointer == -1) this.pointer = pointer;
         if (CircleBounds.overLaps(StickBounds) && isDownTouch && pointer == this.pointer) atControl(new Point2D(x, y));
-        if ((!isDownTouch && pointer == this.pointer) || (isDownTouch && pointer == this.pointer && !CircleBounds.isContains(touch))) returnStick();
+        if ((isDownTouch && pointer == this.pointer && !CircleBounds.isContains(touch))) atControl(new Point2D(x, y));
+        if ((!isDownTouch && pointer == this.pointer)) returnStick();
     }
 
     public void atControl(Point2D point){
-        StickBounds.centerPos.setPoint(point);
-        float dx = CircleBounds.centerPos.getX() - StickBounds.centerPos.getX();
-        float dy = CircleBounds.centerPos.getY() - StickBounds.centerPos.getY();
-        float distance = (float)Math.sqrt(dx*dx + dy*dy);
-        direction.setPoint(-(dx/distance), -(dy/distance));
+        float actualX = point.getX();
+        float actualY = point.getY();
+        float actualDX = CircleBounds.centerPos.getX() - actualX;
+        float actualDY = CircleBounds.centerPos.getY() - actualY;
+        float distance = (float)Math.sqrt(actualDX * actualDX + actualDY * actualDY);
+
+        if (distance > CircleBounds.radius) {
+            actualX = CircleBounds.centerPos.getX() - (actualDX * CircleBounds.radius / distance);
+            actualY = CircleBounds.centerPos.getY() - (actualDY * CircleBounds.radius / distance);
+        }
+
+        StickBounds.centerPos.setPoint(actualX, actualY);
+        direction.setPoint(-(actualDX / distance), -(actualDY / distance));
+
     }
 
     public void returnStick(){
-        StickBounds.centerPos.setPoint(StickBounds.centerPos);
+        StickBounds.centerPos.setPoint(CircleBounds.centerPos);
         direction.setPoint(0, 0);
         pointer = -1;
     }
