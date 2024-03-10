@@ -24,6 +24,12 @@ public abstract class Heroes extends GraphicsObj {
         bounds = new Circle(position, radius);
         direction = new Point2D(0, 0);
     }
+    public Heroes(Texture img, Point2D position) {
+        super(img);
+        this.position =new Point2D(position);
+
+        direction = new Point2D(0, 0);
+    }
 
     public void setDirection(Point2D p){
         direction = p;

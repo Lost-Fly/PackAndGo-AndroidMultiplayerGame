@@ -1,8 +1,11 @@
 package com.aqwsxlostfly.packandgo.Tools;
 
 import com.aqwsxlostfly.packandgo.Main;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 public class Joystick {
 
