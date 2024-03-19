@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
     @Bean
-    public HeadlessApplication getApplication(GameLoop gameLoop){
+    public HeadlessApplication getApplication(GameLoop gameLoop) {
         return new HeadlessApplication(gameLoop);
     }
 }

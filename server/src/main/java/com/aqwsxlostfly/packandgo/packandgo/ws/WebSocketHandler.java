@@ -1,13 +1,14 @@
 package com.aqwsxlostfly.packandgo.packandgo.ws;
 
 import com.badlogic.gdx.utils.Array;
-import org.springframework.context.annotation.Configuration;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
+@Slf4j
 @Component
 public class WebSocketHandler extends AbstractWebSocketHandler {
 
@@ -19,17 +20,24 @@ public class WebSocketHandler extends AbstractWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        log.info("Client connected: " + session.getId());
+        System.out.println("Client connected: " + session.getId());
         sessions.add(session);
         connectListener.handle(session);
+
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        System.out.println("Client " + session.getId() + " sent message: " + message.getPayload().toString());
+        log.info("Client " + session.getId() + " sent message: " + message.getPayload().toString());
         messageListener.handle(session, message.getPayload());
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        log.info("MESSAGE" + session.getId() + " " );
+        System.out.println(session.getId() + " DISconnected ");
         sessions.removeValue(session, true);
         disconnectListener.handle(session);
     }
