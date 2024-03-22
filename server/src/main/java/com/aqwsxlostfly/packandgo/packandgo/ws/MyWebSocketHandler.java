@@ -1,16 +1,13 @@
 package com.aqwsxlostfly.packandgo.packandgo.ws;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
-@Slf4j
 @Component
-public class WebSocketHandler extends AbstractWebSocketHandler {
+public class MyWebSocketHandler extends AbstractWebSocketHandler {
 
     private Array<WebSocketSession> sessions = new Array<>();
 
@@ -18,26 +15,31 @@ public class WebSocketHandler extends AbstractWebSocketHandler {
     private DisconnectListener disconnectListener;
     private MessageListener messageListener;
 
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        log.info("Client connected: " + session.getId());
-        System.out.println("Client connected: " + session.getId());
+        Gdx.app.log("CONNECTION", " NEW CONNECTION: " + " sessionID " + session.getId() + " headers " +
+                session.getHandshakeHeaders() + " protocols " + session.getAcceptedProtocol() + " sizeBynaryLimit " +
+                session.getBinaryMessageSizeLimit() + " clientIP " + session.getRemoteAddress());
         sessions.add(session);
         connectListener.handle(session);
-
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        System.out.println("Client " + session.getId() + " sent message: " + message.getPayload().toString());
-        log.info("Client " + session.getId() + " sent message: " + message.getPayload().toString());
+        Gdx.app.log("MESSAGE", " NEW MESSAGE: " + message + "\n\n" + " sessionID " + session.getId()
+                + " headers " + session.getHandshakeHeaders() + " protocols " + session.getAcceptedProtocol()
+                + " sizeTextLimit " + session.getTextMessageSizeLimit() + " clientIP " + session.getRemoteAddress());
         messageListener.handle(session, message.getPayload());
     }
 
+
+
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        log.info("MESSAGE" + session.getId() + " " );
-        System.out.println(session.getId() + " DISconnected ");
+        Gdx.app.log("CLOSED CONNECTION", " CLOSED CONNECTION: " + " sessionID " + session.getId() + " headers " +
+                session.getHandshakeHeaders() + " protocols " + session.getAcceptedProtocol() + " sizeBynaryLimit " +
+                session.getBinaryMessageSizeLimit() + " clientIP " + session.getRemoteAddress());
         sessions.removeValue(session, true);
         disconnectListener.handle(session);
     }

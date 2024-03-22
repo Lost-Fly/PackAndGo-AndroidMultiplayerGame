@@ -1,6 +1,5 @@
 package com.aqwsxlostfly.packandgo.packandgo.config;
 
-
 import com.aqwsxlostfly.packandgo.packandgo.GameLoop;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import org.springframework.context.annotation.Bean;
