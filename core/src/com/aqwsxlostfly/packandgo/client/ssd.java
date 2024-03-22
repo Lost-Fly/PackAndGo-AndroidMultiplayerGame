@@ -1,4 +1,4 @@
-package com.aqwsxlostfly.packandgo.client;
-
-public class ssd {
-}
+//package com.aqwsxlostfly.packandgo.client;
+//
+//public class ssd {
+//}

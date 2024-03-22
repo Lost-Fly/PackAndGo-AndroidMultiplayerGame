@@ -202,4 +202,5 @@ public class GameSc implements Screen {
         if (wave.isDraw())wave.draw(batch);
         hud.draw(batch);
     }
+
 }
