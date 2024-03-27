@@ -1,17 +1,24 @@
 package com.aqwsxlostfly.packandgo;
 
-import com.aqwsxlostfly.packandgo.Screens.GameSc;
-import com.badlogic.gdx.ApplicationAdapter;
+
+import com.aqwsxlostfly.packandgo.Screens.WaitingSc;
+import com.aqwsxlostfly.packandgo.client.ws.NewWebSocket;
+import com.aqwsxlostfly.packandgo.client.ws.WebSocketListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
 
-import java.util.logging.FileHandler;
+import org.java_websocket.handshake.ServerHandshake;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 public class Main extends Game {
+
+	public NewWebSocket webSocketClient;
+
 	public static SpriteBatch batch;
 	public static Texture img;
 	public static Texture circle;
@@ -22,9 +29,48 @@ public class Main extends Game {
 	public static int screenWidth;
 	public static int screenHeight;
 	public static int record;
+
+	private WebSocketListener getWebsocketListener(){
+		WebSocketListener webSocketListener = new WebSocketListener() {
+			@Override
+			public void onMessageReceived(String message) {
+				Gdx.app.log("MESSAGE RECEIVED",message);
+			}
+
+			@Override
+			public void onConnect(ServerHandshake handshake) {
+				Gdx.app.log("CONNECT","OnConnect");
+
+			}
+
+			@Override
+			public void onClose(int code, String reason) {
+				Gdx.app.log("CLOSE CONNECT","onClose reason: "+ reason);
+
+			}
+
+			@Override
+			public void onError(Exception ex) {
+				Gdx.app.error("ERROR CONNECT","onError: " + ex.getMessage());
+			}
+		};
+
+		return webSocketListener;
+	}
 	
 	@Override
 	public void create () {
+		try {
+			Gdx.app.log("INFO","CONNECT PROCESS");
+			String wsUri = "ws://192.168.113.145:8867/ws";
+			webSocketClient = new NewWebSocket(new URI(wsUri), getWebsocketListener());
+			webSocketClient.connect();
+			webSocketClient.send("CONNECT WAITING SCREEN");
+		} catch (Exception e) {
+
+			Gdx.app.error("ERROR SOCKET CONNECT","ERROR" + e.getMessage());
+		}
+
 		batch = new SpriteBatch();
 		img = new Texture("packlogo.png");
 		circle = new Texture("circle.png");
@@ -38,8 +84,10 @@ public class Main extends Game {
 		record=read();
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
-		setScreen(new GameSc(this));
+		setScreen(new WaitingSc(this));
+
 	}
+
 
 	@Override
 	public void dispose () {
