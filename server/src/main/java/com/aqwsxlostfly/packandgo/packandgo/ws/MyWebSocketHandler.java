@@ -2,10 +2,12 @@ package com.aqwsxlostfly.packandgo.packandgo.ws;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
+@Getter
 @Component
 public class MyWebSocketHandler extends AbstractWebSocketHandler {
 
@@ -32,7 +34,13 @@ public class MyWebSocketHandler extends AbstractWebSocketHandler {
                 + " sizeTextLimit " + session.getTextMessageSizeLimit() + " clientIP " + session.getRemoteAddress());
         messageListener.handle(session, message.getPayload());
     }
-
+    @Override
+    protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
+        Gdx.app.log("MESSAGE", " NEW MESSAGE: " + message + "\n\n" + " sessionID " + session.getId()
+                + " headers " + session.getHandshakeHeaders() + " protocols " + session.getAcceptedProtocol()
+                + " sizeTextLimit " + session.getTextMessageSizeLimit() + " clientIP " + session.getRemoteAddress());
+        messageListener.handle(session, String.valueOf(message.getPayload()));
+    }
 
 
     @Override
@@ -44,32 +52,16 @@ public class MyWebSocketHandler extends AbstractWebSocketHandler {
         disconnectListener.handle(session);
     }
 
-    public ConnectListener getConnectListener() {
-        return connectListener;
-    }
-
     public void setConnectListener(ConnectListener connectListener) {
         this.connectListener = connectListener;
-    }
-
-    public DisconnectListener getDisconnectListener() {
-        return disconnectListener;
     }
 
     public void setDisconnectListener(DisconnectListener disconnectListener) {
         this.disconnectListener = disconnectListener;
     }
 
-    public MessageListener getMessageListener() {
-        return messageListener;
-    }
-
     public void setMessageListener(MessageListener messageListener) {
         this.messageListener = messageListener;
-    }
-
-    public Array<WebSocketSession> getSessions() {
-        return sessions;
     }
 
     public void setSessions(Array<WebSocketSession> sessions) {

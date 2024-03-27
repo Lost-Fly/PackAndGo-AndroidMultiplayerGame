@@ -1,8 +1,8 @@
 package com.aqwsxlostfly.packandgo;
 
-import com.aqwsxlostfly.packandgo.Screens.GameSc;
+
+import com.aqwsxlostfly.packandgo.Screens.WaitingSc;
 import com.aqwsxlostfly.packandgo.client.ws.NewWebSocket;
-import com.aqwsxlostfly.packandgo.client.ws.WebSocketClient;
 import com.aqwsxlostfly.packandgo.client.ws.WebSocketListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -10,13 +10,14 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import org.java_websocket.handshake.ServerHandshake;
+
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 public class Main extends Game {
 
-	public static WebSocketClient webSocketClient;
-
-	public static NewWebSocket newWebSocket;
+	public NewWebSocket webSocketClient;
 
 	public static SpriteBatch batch;
 	public static Texture img;
@@ -29,48 +30,45 @@ public class Main extends Game {
 	public static int screenHeight;
 	public static int record;
 
-	private void getWebsocket(){
-		WebSocketClient webSocketClient = new WebSocketClient("192.168.170.252", 8867);
-
-		webSocketClient.addWebSocketListener(new WebSocketListener() {
+	private WebSocketListener getWebsocketListener(){
+		WebSocketListener webSocketListener = new WebSocketListener() {
 			@Override
 			public void onMessageReceived(String message) {
-				Gdx.app.log("MESSAGE RECEIVED", message);
+				Gdx.app.log("MESSAGE RECEIVED",message);
 			}
 
 			@Override
-			public void onConnect(String message) {
-				Gdx.app.log("CONNECTION CREATED", message);
+			public void onConnect(ServerHandshake handshake) {
+				Gdx.app.log("CONNECT","OnConnect");
+
 			}
 
 			@Override
-			public void onClose(String message) {
-				Gdx.app.log("CONNECTION CLOSED", message);
-			}
-		});
+			public void onClose(int code, String reason) {
+				Gdx.app.log("CLOSE CONNECT","onClose reason: "+ reason);
 
-		Main.webSocketClient = webSocketClient;
+			}
+
+			@Override
+			public void onError(Exception ex) {
+				Gdx.app.error("ERROR CONNECT","onError: " + ex.getMessage());
+			}
+		};
+
+		return webSocketListener;
 	}
 	
 	@Override
 	public void create () {
-//		try {
-//			getWebsocket();
-//
-//			webSocketClient.connect();
-//
-//			webSocketClient.sendMessage("HELLO SERVER");
-//
-//		} catch (Exception e){
-//			Gdx.app.error("CONNECTION FAILED", e.getMessage());
-//		}
-
 		try {
-			String wsUri = "ws://192.168.170.252:8867/ws";
-			NewWebSocket webSocketClient = new NewWebSocket(new URI(wsUri));
+			Gdx.app.log("INFO","CONNECT PROCESS");
+			String wsUri = "ws://192.168.113.145:8867/ws";
+			webSocketClient = new NewWebSocket(new URI(wsUri), getWebsocketListener());
 			webSocketClient.connect();
+			webSocketClient.send("CONNECT WAITING SCREEN");
 		} catch (Exception e) {
-			e.printStackTrace();
+
+			Gdx.app.error("ERROR SOCKET CONNECT","ERROR" + e.getMessage());
 		}
 
 		batch = new SpriteBatch();
@@ -86,7 +84,7 @@ public class Main extends Game {
 		record=read();
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
-		setScreen(new GameSc(this));
+		setScreen(new WaitingSc(this));
 
 	}
 
@@ -95,9 +93,6 @@ public class Main extends Game {
 	public void dispose () {
 		batch.dispose();
 		img.dispose();
-		if (webSocketClient != null) {
-			webSocketClient.close();
-		}
 	}
 	public static void write(String str){
 		FileHandle file = Gdx.files.local("rec.txt");

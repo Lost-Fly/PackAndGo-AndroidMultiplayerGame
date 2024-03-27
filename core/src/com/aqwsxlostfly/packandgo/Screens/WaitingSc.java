@@ -12,13 +12,16 @@ import com.aqwsxlostfly.packandgo.Tools.Wave;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
 import java.util.ArrayList;
 
-public class GameSc implements Screen {
+public class WaitingSc implements Screen {
 
 
     Main main;
@@ -26,19 +29,30 @@ public class GameSc implements Screen {
     Joystick joyBullet;
     public static Player player;
     public static ArrayList<Bullet> bullets;
-    public static ArrayList<Enemy> enemies;
-    public static ArrayList<Player> players;
-    public static Wave wave;
 
+    public static ArrayList<Player> players;
+
+    BitmapFont font;
+    GlyphLayout textWaiting, textJoin;
 
     public static BulletGenerator bulletGenerator;
-    public static GameHud hud;
 
-    public GameSc(Main main){
+    public WaitingSc(Main main){
         this.main = main;
+        FreeTypeFontGenerator gen = new FreeTypeFontGenerator((Gdx.files.internal(("font.ttf"))));
+        FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        p.size = Main.screenWidth / 30;
+        p.color = new Color(Color.RED);
+        font = gen.generateFont(p);
+        textWaiting = new GlyphLayout();
+        textWaiting.setText(font, "WAITING OTHER PLAYER");
+        textJoin = new GlyphLayout();
+        textJoin.setText(font, "PLAYER HAS JOINED");
     }
     @Override
     public void show() {
+
+
         Gdx.input.setInputProcessor(new InputProcessor() {
             @Override
             public boolean keyDown(int keycode) {
@@ -96,17 +110,18 @@ public class GameSc implements Screen {
 
         loadHeroes();
     }
-
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0,1,0,1);
+        Gdx.gl.glClearColor(0, 1, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         gameUpdate();
         Main.batch.begin();
+
         gameRender(Main.batch);
         Main.batch.end();
-    }
 
+
+    }
     @Override
     public void resize(int width, int height) {
 
@@ -132,78 +147,54 @@ public class GameSc implements Screen {
 
     }
 
-    public void loadHeroes(){
-        joy = new Joystick(Main.circle, Main.capibara, new Point2D(((Main.screenHeight/3)/2+(Main.screenHeight/3)/4), (Main.screenHeight/3)/2+(Main.screenHeight/3)/4), Main.screenHeight/3);
-        joyBullet = new Joystick(Main.circle, Main.capibara, new Point2D(Main.screenWidth-((Main.screenHeight/3)/2+(Main.screenHeight/3)/4), (Main.screenHeight/3)/2+(Main.screenHeight/3)/4), Main.screenHeight/3);
-        player = new Player(Main.capibara, new Point2D(Main.screenWidth/2, Main.screenHeight/2), 10F, (float) (Main.screenHeight/5), 5);
-
+    public void loadHeroes() {
+        joy = new Joystick(Main.circle, Main.capibara, new Point2D(((Main.screenHeight / 3) / 2 + (Main.screenHeight / 3) / 4), (Main.screenHeight / 3) / 2 + (Main.screenHeight / 3) / 4), Main.screenHeight / 3);
+        joyBullet = new Joystick(Main.circle, Main.capibara, new Point2D(Main.screenWidth - ((Main.screenHeight / 3) / 2 + (Main.screenHeight / 3) / 4), (Main.screenHeight / 3) / 2 + (Main.screenHeight / 3) / 4), Main.screenHeight / 3);
+        player = new Player(Main.capibara, new Point2D(Main.screenWidth / 2, Main.screenHeight / 2), 10F, (float) (Main.screenHeight / 5), 5);
+        players = new ArrayList<Player>();
+        players.add(player);
         bullets = new ArrayList<Bullet>();
-        enemies = new ArrayList<Enemy>();
-        wave = new Wave(4,1,5);
-        bulletGenerator= new BulletGenerator();
-        hud = new GameHud();
-
+        bulletGenerator = new BulletGenerator();
     }
 
-    public void multitouch(float x, float y, boolean isDownTouch, int pointer){
-        for(int i =0; i < 3; i++){
-            joy.update(x,y,isDownTouch, pointer);
-            joyBullet.update(x,y,isDownTouch, pointer);
+    public void multitouch(float x, float y, boolean isDownTouch, int pointer) {
+        for (int i = 0; i < 3; i++) {
+            joy.update(x, y, isDownTouch, pointer);
+            joyBullet.update(x, y, isDownTouch, pointer);
         }
     }
 
-    public void collision(){
-        for (int i=0;i<bullets.size();i++)
-            for (int j=0;j<enemies.size();j++){
-                if (bullets.get(i).bounds.overLaps(enemies.get(j).bounds)){
-                    enemies.get(j).hit();
-                    bullets.remove(i);
-                    player.setScore();
-                    break;
-                }
-            }
+    public void gameUpdate() {
 
-        for (int j=0;j<enemies.size();j++){
-            if (player.bounds.overLaps(enemies.get(j).bounds)){
-                player.hit();
-                if (!player.isGhost()) {enemies.get(j).hit();}
-            }
-        }
-    }
-
-    public void gameUpdate(){
         player.setDirection(joy.getDir());
-        player.update();
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).update();
+        }
+
+        
+
         bulletGenerator.update(joyBullet);
-        for (int i =0; i<bullets.size(); i++) {
+        for (int i = 0; i < bullets.size(); i++) {
             bullets.get(i).update();
             if (bullets.get(i).isOut) {
                 bullets.remove(i--);
             }
         }
-        for (int i =0;i< enemies.size() ; i++) {
-            enemies.get(i).update();
-            if(enemies.get(i).getHealth()<1){
-                enemies.remove(i--);
-            }
-        }
-        collision();
-        wave.update();
-        if (player.getHealth()<1)main.setScreen(new DeadInside(main,player.getScore()+""));
     }
 
-    public void gameRender(SpriteBatch batch){
-        player.draw(batch);
+    public void gameRender(SpriteBatch batch) {
+        if (players.size() < 2) {
+            font.draw(batch, textWaiting, Main.screenWidth / 2 - textWaiting.width / 2, Main.screenHeight -Main.screenHeight/10);
+        } else {
+            font.draw(batch, textJoin, Main.screenWidth / 2 - textWaiting.width / 2, Main.screenHeight -Main.screenHeight/10 );
+        }
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).draw(batch);
+        }
         joy.draw(batch);
         joyBullet.draw(batch);
         for (int i = bullets.size() - 1; i >= 0; i--) {
             bullets.get(i).draw(batch);
         }
-        for (int i = enemies.size() - 1; i >= 0; i--) {
-            enemies.get(i).draw(batch);
-        }
-        if (wave.isDraw())wave.draw(batch);
-        hud.draw(batch);
     }
-
 }
